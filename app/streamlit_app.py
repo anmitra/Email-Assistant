@@ -11,12 +11,13 @@ import html
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from email.mime.text import MIMEText
-import httplib2
-from google_auth_httplib2 import AuthorizedHttp
-
 
 import streamlit as st
 from dotenv import load_dotenv
+
+# For robust Gmail HTTP timeouts across client versions
+import httplib2
+from google_auth_httplib2 import AuthorizedHttp
 
 # =========================
 # Page / Theme
@@ -92,6 +93,9 @@ def ensure_state_defaults():
     st.session_state.setdefault("gmail_connected", False)
     st.session_state.setdefault("gmail_profile", None)
     st.session_state.setdefault("gmail_pull_n", 5)  # default pull = 5
+    # Buffered updates to avoid widget-state mutation error
+    st.session_state.setdefault("triage_text_buffer", "")
+    st.session_state.setdefault("triage_text_pending", False)
 ensure_state_defaults()
 
 # =========================
@@ -260,7 +264,6 @@ def gmail_get_service():
         if not creds or not creds.valid:
             raise RuntimeError("Demo Gmail credentials invalid; regenerate token.json for the demo mailbox.")
 
-        # Timeout-capable, credentialled HTTP client
         http = AuthorizedHttp(creds, http=httplib2.Http(timeout=10))
         return build("gmail", "v1", http=http, cache_discovery=False)
 
@@ -282,7 +285,6 @@ def gmail_get_service():
 
     http = AuthorizedHttp(creds, http=httplib2.Http(timeout=10))
     return build("gmail", "v1", http=http, cache_discovery=False)
-
 
 def gmail_profile(service) -> Dict[str,Any]:
     return service.users().getProfile(userId="me").execute(num_retries=1)
@@ -427,6 +429,12 @@ with tab_inbox:
         st.toggle("Save raw responses to Logs", key="save_logs", value=st.session_state.save_logs)
 
         st.caption("Paste raw emails (subject/from/date/body). Separate with ---")
+
+        # Hydrate triage_text safely (before creating the widget) if pending
+        if st.session_state.get("triage_text_pending"):
+            st.session_state.triage_text = st.session_state.triage_text_buffer
+            st.session_state.triage_text_pending = False
+
         st.text_area(
             "Emails to triage",
             height=220,
@@ -500,7 +508,9 @@ with tab_inbox:
                                     snip=sanitize_text(row["snippet"]),
                                 )
                             )
-                        st.session_state.triage_text = "\n---\n".join(rows)
+                        # Stage into buffer; avoid mutating widget state directly
+                        st.session_state.triage_text_buffer = "\n---\n".join(rows)
+                        st.session_state.triage_text_pending = True
                         st.toast(f"Pulled {len(rows)} from Gmail ✅")
                         st.rerun()
                     except Exception as e:
