@@ -1,7 +1,5 @@
 <div align="center" id="top">
 
-<img src="docs/banner.png" width="100%" alt="AI Email Assistant Banner"/>
-
 # 📨 AI Email Assistant  
 **Transforming Inbox Chaos into Actionable Productivity**
 
@@ -17,13 +15,13 @@
 
 ## ✨ Overview
 
-**AI Email Assistant** is an intelligent Gmail-connected Streamlit app that uses **OpenAI GPT-4o** and **Anthropic Claude 3.5 Sonnet** to:
-- 🧠 **Summarize, prioritize, and tag** your emails  
-- ✍️ **Draft professional replies** instantly  
-- 📬 **Integrate securely with Gmail** via OAuth2  
-- 🎨 Deliver a **sleek, responsive Streamlit interface**
+**AI Email Assistant** is an intelligent Gmail-connected Streamlit app powered by **OpenAI GPT-4o** and **Anthropic Claude 3.5 Sonnet** that helps you:
+- 🧠 **Summarize, prioritize, and tag** incoming emails  
+- ✍️ **Draft professional replies** automatically  
+- 📬 **Integrate securely with Gmail** via OAuth 2.0  
+- 🎨 Use a sleek, responsive **Streamlit dashboard**
 
-Built to showcase **end-to-end GenAI engineering** — from API integration and structured prompting to production-grade UI and state management.
+This project demonstrates **end-to-end Generative AI engineering** — from retrieval (Gmail API) and reasoning (LLMs) to production-grade UI and secure deployment.
 
 ---
 
@@ -32,7 +30,7 @@ Built to showcase **end-to-end GenAI engineering** — from API integration and 
 | Category | Description |
 |-----------|-------------|
 | 📬 **Gmail Integration** | OAuth2 read/send access — list, preview, and reply to real emails |
-| 🧩 **AI-Powered Triage** | Summaries, priority (Low/Medium/High), next actions, and tags |
+| 🧩 **AI-Powered Triage** | Summaries, priority (Low / Medium / High), next actions, and tags |
 | ✍️ **Reply Composer** | Drafts contextual replies with one click |
 | 🎨 **Modern UI** | Tabs, cards, badges, and keyboard-friendly design |
 | 🔐 **Demo Mode** | Pre-connected mailbox for recruiter showcase |
