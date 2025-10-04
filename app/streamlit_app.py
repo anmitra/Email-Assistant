@@ -30,20 +30,20 @@ st.set_page_config(
 st.markdown("""
 <style>
 html, body, [class*="css"]  { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-:root { --card-bg: rgba(255,255,255,0.04); --card-border: rgba(255,255,255,0.08);
+:root { --card-bg: rgba(255,255,255,0.04); --card-border: rgba(0,0,0,0.08);
         --good: #22C55E; --warn: #F59E0B; --bad: #EF4444; --muted: #6b7280; }
-.main-title { font-size: 2.1rem; font-weight: 800; margin-bottom: .15rem; }
+.main-title { font-size: 2.3rem; font-weight: 800; margin-bottom: .15rem; white-space: normal !important; }
 .sub-title { font-size: 1rem; color: var(--muted); margin-bottom: 1.0rem; }
-.card { border: 1px solid var(--card-border); background: var(--card-bg); border-radius: 16px;
-        padding: 16px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.card { border: 1px solid var(--card-border); background: #fff; border-radius: 16px;
+        padding: 16px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
 .card-title { font-weight: 700; margin-bottom: 6px; }
 .card-meta { color: var(--muted); font-size: 0.85rem; }
 .badge { display:inline-flex; align-items:center; gap:6px; font-size: 0.8rem; font-weight: 700;
          padding: 4px 10px; border-radius: 999px; line-height: 1;
-         border: 1px solid var(--card-border); background: rgba(255,255,255,0.6); }
-.badge.good { border-color: rgba(34,197,94,.35); }
-.badge.warn { border-color: rgba(245,158,11,.35); }
-.badge.bad  { border-color: rgba(239,68,68,.35); }
+         border: 1px solid var(--card-border); background: #f8fafc; }
+.badge.good { background:#dcfce7; color:#166534; border-color: rgba(34,197,94,.35); }
+.badge.warn { background:#fef9c3; color:#92400e; border-color: rgba(245,158,11,.35); }
+.badge.bad  { background:#fee2e2; color:#991b1b; border-color: rgba(239,68,68,.35); }
 .block-container { padding-top: 1.2rem; }
 .footer { text-align: center; font-size: 0.85rem; color: var(--muted);
           margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,.08);}
@@ -224,15 +224,17 @@ def can_send(addr: str) -> bool:
 def gmail_get_service():
     """
     Returns authenticated Gmail service.
-      1) Demo mode (secrets): uses pre-connected refresh token (no viewer OAuth)
+      1) Demo mode (secrets): pre-connected refresh token (no viewer OAuth)
       2) Local fallback: Desktop OAuth (.oauth/client_secret.json)
-    Includes 10s timeout on all requests to prevent infinite spinners.
+    Uses a 10s timeout via build_http(timeout=10) to avoid infinite spinners.
     """
     from googleapiclient.discovery import build
-    from googleapiclient.http import HttpRequest
+    from googleapiclient.http import build_http
     from google.oauth2.credentials import Credentials
     from google_auth_oauthlib.flow import InstalledAppFlow
     from google.auth.transport.requests import Request
+
+    http = build_http(timeout=10)
 
     # --- Demo mode via secrets (pre-connected mailbox) ---
     if is_demo_mode():
@@ -256,12 +258,7 @@ def gmail_get_service():
         if not creds or not creds.valid:
             raise RuntimeError("Demo Gmail credentials invalid; regenerate token.json for the demo mailbox.")
 
-        service = build(
-            "gmail","v1",
-            credentials=creds,
-            cache_discovery=False,
-            requestBuilder=lambda *a, **k: HttpRequest(*a, **k, timeout=10),
-        )
+        service = build("gmail","v1", credentials=creds, http=http, cache_discovery=False)
         return service
 
     # --- Local Desktop OAuth fallback ---
@@ -278,14 +275,7 @@ def gmail_get_service():
         flow = InstalledAppFlow.from_client_secrets_file(str(CLIENT_SECRET_PATH), GMAIL_SCOPES)
         creds = flow.run_local_server(port=0); TOKEN_PATH.write_text(creds.to_json())
 
-    from googleapiclient.discovery import build
-    from googleapiclient.http import HttpRequest
-    service = build(
-        "gmail","v1",
-        credentials=creds,
-        cache_discovery=False,
-        requestBuilder=lambda *a, **k: HttpRequest(*a, **k, timeout=10),
-    )
+    service = build("gmail","v1", credentials=creds, http=http, cache_discovery=False)
     return service
 
 def gmail_profile(service) -> Dict[str,Any]:
@@ -417,7 +407,7 @@ with tab_inbox:
     st.subheader("Smart Inbox Overview")
     st.caption("Pull, triage, and reply to recent messages intelligently.")
 
-    left, right = st.columns([0.46, 0.54], vertical_alignment="top")
+    left, right = st.columns([0.46, 0.54])
     with left:
         st.selectbox("Provider", ["OpenAI", "Anthropic"], index=0, key="provider")
         if st.session_state.last_provider != st.session_state.provider:
