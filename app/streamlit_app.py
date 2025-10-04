@@ -11,6 +11,9 @@ import html
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from email.mime.text import MIMEText
+import httplib2
+from google_auth_httplib2 import AuthorizedHttp
+
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -226,15 +229,14 @@ def gmail_get_service():
     Returns authenticated Gmail service.
       1) Demo mode (secrets): pre-connected refresh token (no viewer OAuth)
       2) Local fallback: Desktop OAuth (.oauth/client_secret.json)
-    Uses a 10s timeout via build_http(timeout=10) to avoid infinite spinners.
+
+    Uses AuthorizedHttp(creds, http=httplib2.Http(timeout=10)) so all Gmail calls have a 10s timeout,
+    compatible with older google-api-python-client versions that don't support build_http(timeout=...).
     """
     from googleapiclient.discovery import build
-    from googleapiclient.http import build_http
     from google.oauth2.credentials import Credentials
     from google_auth_oauthlib.flow import InstalledAppFlow
     from google.auth.transport.requests import Request
-
-    http = build_http(timeout=10)
 
     # --- Demo mode via secrets (pre-connected mailbox) ---
     if is_demo_mode():
@@ -258,8 +260,9 @@ def gmail_get_service():
         if not creds or not creds.valid:
             raise RuntimeError("Demo Gmail credentials invalid; regenerate token.json for the demo mailbox.")
 
-        service = build("gmail","v1", credentials=creds, http=http, cache_discovery=False)
-        return service
+        # Timeout-capable, credentialled HTTP client
+        http = AuthorizedHttp(creds, http=httplib2.Http(timeout=10))
+        return build("gmail", "v1", http=http, cache_discovery=False)
 
     # --- Local Desktop OAuth fallback ---
     creds = None
@@ -268,15 +271,18 @@ def gmail_get_service():
         from google.auth.transport.requests import Request as GRequest
         creds = GCreds.from_authorized_user_file(str(TOKEN_PATH), GMAIL_SCOPES)
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(GRequest()); TOKEN_PATH.write_text(creds.to_json())
+            creds.refresh(GRequest())
+            TOKEN_PATH.write_text(creds.to_json())
     if not creds or not creds.valid:
         if not CLIENT_SECRET_PATH.exists():
             raise RuntimeError("Missing Desktop OAuth client at ./.oauth/client_secret.json")
         flow = InstalledAppFlow.from_client_secrets_file(str(CLIENT_SECRET_PATH), GMAIL_SCOPES)
-        creds = flow.run_local_server(port=0); TOKEN_PATH.write_text(creds.to_json())
+        creds = flow.run_local_server(port=0)
+        TOKEN_PATH.write_text(creds.to_json())
 
-    service = build("gmail","v1", credentials=creds, http=http, cache_discovery=False)
-    return service
+    http = AuthorizedHttp(creds, http=httplib2.Http(timeout=10))
+    return build("gmail", "v1", http=http, cache_discovery=False)
+
 
 def gmail_profile(service) -> Dict[str,Any]:
     return service.users().getProfile(userId="me").execute(num_retries=1)
