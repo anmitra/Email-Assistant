@@ -48,12 +48,3 @@ email-assistant/
 │   └── token.json              # Auto-generated Gmail token
 ├── requirements.txt            # Dependencies
 └── README.md                   # This file
-
-## Local Setup
-1. Clone & Setup
-git clone https://github.com/anmitra/Email-Assistant.git
-cd Email-Assistant
-python -m venv .venv
-source .venv/bin/activate   # or .venv\Scripts\activate on Windows
-pip install -r requirements.txt
-
