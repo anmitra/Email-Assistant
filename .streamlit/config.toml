@@ -1,0 +1,18 @@
+[theme]
+base = "dark"
+primaryColor = "#8B5CF6"          # violet-500
+backgroundColor = "#0B0F14"       # deep slate
+secondaryBackgroundColor = "#121823"
+textColor = "#E5E7EB"             # gray-200
+font = "sans serif"
+
+# (optional) nice-to-haves
+[client]
+showErrorDetails = true
+
+[server]
+runOnSave = true                   # auto-rerun when you save
+headless = true
+
+[browser]
+gatherUsageStats = false

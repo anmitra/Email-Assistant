@@ -1,0 +1,21 @@
+[
+    {
+      "id": "m001",
+      "thread_id": "t001",
+      "when": 1727930400,
+      "sender": "careers@acme.example",
+      "subject": "Interview scheduling and next steps",
+      "body_text": "Hi Anurag,\nWe’d like to schedule a 45-min technical interview next week. Please share your availability and any constraints.\nBest,\nRecruiting",
+      "labels": []
+    },
+    {
+      "id": "m002",
+      "thread_id": "t002",
+      "when": 1728016800,
+      "sender": "billing@cloudco.example",
+      "subject": "Invoice #98765 due Oct 10",
+      "body_text": "Your invoice is due on Oct 10. Late payment fees apply after that date. Let us know if you need an extension.",
+      "labels": []
+    }
+  ]
+  
