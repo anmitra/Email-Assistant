@@ -42,12 +42,23 @@ html, body, [class*="css"]  { font-family: Inter, system-ui, -apple-system, Sego
         padding: 16px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
 .card-title { font-weight: 700; margin-bottom: 6px; }
 .card-meta { color: var(--muted); font-size: 0.85rem; }
-.badge { display:inline-flex; align-items:center; gap:6px; font-size: 0.8rem; font-weight: 700;
-         padding: 4px 10px; border-radius: 999px; line-height: 1;
-         border: 1px solid var(--card-border); background: #f8fafc; }
-.badge.good { background:#dcfce7; color:#166534; border-color: rgba(34,197,94,.35); }
-.badge.warn { background:#fef9c3; color:#92400e; border-color: rgba(245,158,11,.35); }
-.badge.bad  { background:#fee2e2; color:#991b1b; border-color: rgba(239,68,68,.35); }
+.badge {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size: 0.8rem; font-weight: 700; line-height: 1;
+  padding: 4px 10px; border-radius: 999px;
+  background: #e2e8f0;          /* <-- darker neutral bg */
+  color: #111827;                /* <-- darker text */
+  border: 1px solid #cbd5e1;     /* <-- clearer outline */
+  margin-right: 6px; margin-bottom: 6px;
+}
+
+/* keep your priority variants as-is */
+.badge.good{ background:#dcfce7; color:#166534; border-color:rgba(34,197,94,.35); }
+.badge.warn{ background:#fef9c3; color:#92400e; border-color:rgba(245,158,11,.35); }
+.badge.bad { background:#fee2e2; color:#991b1b; border-color:rgba(239,68,68,.35); }
+
+/* optional: wrap labels nicely */
+.labels-wrap{ display:flex; flex-wrap:wrap; gap:6px; }
 .block-container { padding-top: 1.2rem; }
 .footer { text-align: center; font-size: 0.85rem; color: var(--muted);
           margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,.08);}
@@ -366,8 +377,10 @@ def message_card(item: Dict[str, Any], key: Optional[str] = None):
         st.write(f"• {next_step}")
     if labels:
         st.caption("Labels:")
-        safe_labels = " ".join([f'<span class="badge">{h(l)}</span>' for l in labels])
-        st.markdown(safe_labels, unsafe_allow_html=True)
+        safe_labels = "".join([f'<span class="badge">{h(l)}</span>' for l in labels])
+        st.markdown(f'<div class="labels-wrap">{safe_labels}</div>', unsafe_allow_html=True)
+
+
     if score is not None:
         st.caption(f"Relevance score: {score:.2f}")
 
